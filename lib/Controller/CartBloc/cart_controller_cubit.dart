@@ -1,7 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:hive/hive.dart';
-import 'package:zartek_test/Interface/FoodData.dart';
+import 'package:zartek_test/Models/CountModel.dart';
 
 part 'cart_controller_state.dart';
 
@@ -11,40 +11,52 @@ class CartControllerCubit extends Cubit<CartControllerState> {
 
 
   int value=0;
+  Map map={};
+  Box box=Hive.box("cart");
 
 
-  void increment(CategoryDish dish)async{
+  void increment(CountModel model)async{
+    map=box.toMap();
+      if(map.containsKey(model.dishId)){
+        int count=map[model.dishId];
+        count=count+1;
+        map[model.dishId]=count;
+        await box.put(model.dishId, count);
+      }
+      else {
+        map[model.dishId] =1;
+        await box.put(model.dishId, 1);
+      }
 
-    value=value+1;
-    Box box=Hive.box("cart");
-    box.put(dish.dishId,value);
-    var val=box.get(dish.dishId);
-    if(val==null){
-      value=1;
-    }else{
-      value=val;
-    }
-    box.put(dish.dishId,value);
-    emit(CartControllerLoaded(value));
+    print("count ${map[model.dishId]}");
+    emit(CartControllerLoaded(map[model.dishId]));
 
   }
 
-  void decrement(CategoryDish dish) async{
+  void decrement(CountModel model) async{
 
-    if(value<=0){
-      value=0;
-    }else{
-      value=value-1;
+
+    map=box.toMap();
+    if(map.containsKey(model.dishId)){
+      int count=map[model.dishId];
+      if(count<=1){
+        count=0;
+      }else{
+        count=count-1;
+      }
+      map[model.dishId]=count;
+      await box.put(model.dishId, count);
     }
-    Box box=Hive.box("cart");
-    box.put(dish.dishId,value);
-    var val=box.get(dish.dishId);
-    if(val==null){
-      value=0;
-    }else{
-      value=val;
+    else {
+      map[model.dishId] =1;
+      await box.put(model.dishId, 1);
     }
-    box.put(dish.dishId,value);
-    emit (CartControllerLoaded(value));
+    print("count ${map[model.dishId]}");
+    emit(CartControllerLoaded(map[model.dishId]));
+  }
+
+  void reset()async{
+    await box.clear();
+    map={};
   }
 }

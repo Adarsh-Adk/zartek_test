@@ -18,10 +18,10 @@ class FoodDataController extends GetxController{
       if(tables!=null){
         tableMenuList.value=tables;
       }
-      print("tables:${tables}");
+      // print("tables:${tables}");
 
     }catch(e){
-      print("FoodDataController:${e}");
+      print("FoodDataController:$e");
     }
     finally{
       isLoading(false);

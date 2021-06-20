@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zartek_test/Constants/SizeConfig.dart';
 class ImageWidgetPlaceholder extends StatelessWidget {
   const ImageWidgetPlaceholder({
     Key key,
@@ -12,6 +13,19 @@ class ImageWidgetPlaceholder extends StatelessWidget {
    try{
      return Image.network(
        imageLink,
+       errorBuilder: (BuildContext context, Object exception, StackTrace stackTrace){
+         return Container(
+           child:Column(
+             mainAxisAlignment: MainAxisAlignment.spaceAround,
+             mainAxisSize: MainAxisSize.min,
+             crossAxisAlignment: CrossAxisAlignment.center,
+             children: [
+               Text("☹️",style: TextStyle(color: Colors.red,fontSize: SizeConfig.blockSizeHorizontal*8),),
+               Text("Unable to load Image",style: TextStyle(color: Colors.red,fontSize: SizeConfig.blockSizeHorizontal*3,),textAlign: TextAlign.center,),
+             ],
+           )
+         );
+       },
        fit: BoxFit.fitWidth,
        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
          if (wasSynchronouslyLoaded) {
@@ -26,6 +40,17 @@ class ImageWidgetPlaceholder extends StatelessWidget {
      );
    }catch(e){
      print(e);
+     return Container(
+         child:Column(
+           mainAxisAlignment: MainAxisAlignment.spaceAround,
+           mainAxisSize: MainAxisSize.min,
+           crossAxisAlignment: CrossAxisAlignment.center,
+           children: [
+             Text("☹️",style: TextStyle(color: Colors.red,fontSize: SizeConfig.blockSizeHorizontal*8),),
+             Text("Unable to load Image",style: TextStyle(color: Colors.red,fontSize: SizeConfig.blockSizeHorizontal*3,),textAlign: TextAlign.center,),
+           ],
+         )
+     );
    }
   }
 }

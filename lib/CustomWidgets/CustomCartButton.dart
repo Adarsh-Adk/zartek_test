@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:zartek_test/Constants/CColor.dart';
 
 class CustomCartButton extends StatefulWidget {

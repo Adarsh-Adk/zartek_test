@@ -1,5 +1,8 @@
+import 'package:flutter/cupertino.dart';
+import 'package:zartek_test/Interface/FoodData.dart';
+
 class CountModel{
   String dishId;
-  int count;
-  CountModel({ this.dishId, this.count});
+  CategoryDish dish;
+  CountModel({@required this.dishId,@required this.dish});
 }

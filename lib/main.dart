@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
@@ -8,7 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:zartek_test/Constants/SizeConfig.dart';
 import 'package:zartek_test/Screens/HomeScreen/HomeScreen.dart';
 import 'package:zartek_test/Screens/LoginScreen/LoginScreen.dart';
-
+import 'package:zartek_test/Services/HelperService.dart';
 import 'Interface/FoodData.dart';
 import 'Models/User.dart';
 import 'Services/AuthService.dart';
@@ -17,25 +16,22 @@ void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   Directory appDir=await getApplicationDocumentsDirectory();
-  await Hive.registerAdapter(CategoryDishAdapter());
-  await Hive.registerAdapter(DishCurrencyAdapter());
-  await Hive.registerAdapter(AddonCatAdapter());
-  await Hive.registerAdapter(EnumValuesAdapter());
-  await Hive.init(appDir.path);
-  Box box=await Hive.openBox("cart");
-  Box box2=await Hive.openBox("cartTotal");
-  Box box3=await Hive.openBox("user");
-  box.clear();
-  box2.clear();
+  Hive.registerAdapter(CategoryDishAdapter());
+  Hive.registerAdapter(DishCurrencyAdapter());
+  Hive.registerAdapter(AddonCatAdapter());
+  Hive.registerAdapter(EnumValuesAdapter());
+  Hive.init(appDir.path);
+  await HelperService.openAllBoxes();
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    AuthService();
 
     return StreamProvider<User>.value(
+      initialData: null,
       value: AuthService().user,
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

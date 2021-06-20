@@ -4,7 +4,8 @@ import 'package:zartek_test/Constants/CColor.dart';
 class CustomTextInputField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
-  CustomTextInputField({Key key,@required this.controller,@required this.label}) : super(key: key);
+  final int maxLength;
+  CustomTextInputField({Key key,@required this.controller,@required this.label,@required this.maxLength}) : super(key: key);
 
 
   @override
@@ -12,7 +13,7 @@ class CustomTextInputField extends StatelessWidget {
     return TextFormField(
       controller: controller,
       keyboardType: TextInputType.phone,
-      maxLength: 14,
+      maxLength: this.maxLength,
       decoration: InputDecoration(
           contentPadding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
           border: OutlineInputBorder(
