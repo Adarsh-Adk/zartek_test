@@ -18,7 +18,6 @@ class CartTotalController extends GetxController{
   @override
   void onClose(){
     resetCart();
-    HelperService().clearAllBoxes();
     super.onClose();
   }
 

@@ -1,12 +1,9 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hive/hive.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:zartek_test/Constants/CColor.dart';
 import 'package:zartek_test/Constants/SizeConfig.dart';
 import 'package:zartek_test/CustomWidgets/CustomRaisedGradientButton.dart';
-import 'package:zartek_test/Screens/HomeScreen/HomeScreen.dart';
 import 'package:zartek_test/Screens/PhoneRegisterScreen/PhoneRegisterScreen.dart';
 import 'package:zartek_test/Services/AuthService.dart';
 import 'package:zartek_test/Services/HelperService.dart';

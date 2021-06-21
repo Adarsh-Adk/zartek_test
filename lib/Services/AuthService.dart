@@ -1,21 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart' as fire;
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:hive/hive.dart';
-import 'package:page_transition/page_transition.dart';
-import 'package:zartek_test/Controller/CartBloc/cart_controller_cubit.dart';
-import 'package:zartek_test/Controller/CartTotalController.dart';
 import 'package:zartek_test/CustomWidgets/CustomTextInputField.dart';
 import 'package:zartek_test/Models/User.dart' as model;
-import 'package:zartek_test/Screens/HomeScreen/HomeScreen.dart';
 import 'package:zartek_test/Services/HelperService.dart';
 
 class AuthService {
   String _phoneNo;
-  String _smsOTP;
   String _verificationId;
   String _errorMessage;
   TextEditingController otpController = TextEditingController();
@@ -52,17 +45,13 @@ class AuthService {
           print("${user.displayName}${user.uid}${user.email}");
 
           Box box = Hive.box("user");
-          String uid;
           await box
               .put("userName", "${user.displayName}")
               .then((value) async => await box.put("userId", "${user.uid}"))
               .then((value) async =>
                   await box.put("email", "${user.displayName}"))
               .then((value) async => await box.put("imageUrl", user.photoURL))
-              .then((value) async => await box.get("userId"))
-              .then((val) {
-            uid = val;
-          });
+              .then((value) async => await box.get("userId"));
         });
       } on FirebaseAuthException catch (e) {
         if (e.code == 'account-exists-with-different-credential') {

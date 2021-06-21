@@ -10,6 +10,7 @@ import 'package:zartek_test/Controller/CartTotalController.dart';
 import 'package:zartek_test/Controller/FoodDataController.dart';
 import 'package:zartek_test/CustomWidgets/CustomDrawer.dart';
 import 'package:zartek_test/CustomWidgets/CustomHomeScreenCard.dart';
+import 'package:zartek_test/Interface/FoodData.dart';
 import 'package:zartek_test/Models/CountModel.dart';
 import 'package:zartek_test/Screens/OrderSummaryScreen/OrderSummaryScreen.dart';
 import 'package:hive/hive.dart';
@@ -118,8 +119,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                             child: Center(child:
                                                 GetX<CartTotalController>(
                                               builder: (controller2) {
+                                                Map<String, List<CategoryDish>> dishMap = {};
+                                                controller2.list.forEach((element) {
+                                                  dishMap[element.dishId] = []..add(element);
+                                                });
                                                 return Text(
-                                                  "${controller2.list.length}",
+                                                  "${dishMap.keys.length}",
                                                   style: GoogleFonts.roboto(
                                                       fontSize: 8,
                                                       color: Colors.white),

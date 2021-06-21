@@ -9,6 +9,7 @@ import 'package:zartek_test/Controller/CartBloc/cart_controller_cubit.dart';
 import 'package:zartek_test/Controller/CartTotalController.dart';
 import 'package:zartek_test/Services/AuthService.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:zartek_test/Services/HelperService.dart';
 
 class CustomDrawer extends StatefulWidget {
   final double height;
@@ -32,12 +33,19 @@ class _CustomDrawerState extends State<CustomDrawer> {
 
   Box userBox = Hive.box("user");
   CartTotalController cartController=Get.find();
+  String userId;
 
   @override
-  void dispose() {
-    cartController.onClose();
-    super.dispose();
+  void initState() {
+    userId=userBox.get("userId");
+    super.initState();
   }
+  // @override
+  // void dispose() {
+  //     cartController.onClose();
+  //     HelperService().clearAllBoxes();
+  //   super.dispose();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +154,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         GoogleFonts.poppins(color: CColor.HomeScreenAppbarIcon),
                   ),
                   onTap: () async {
-                    await AuthService().signOut(context: context);
+                    await AuthService().signOut(context: context).then((value) => cartController.onClose());
                   },
                 ),
               )
