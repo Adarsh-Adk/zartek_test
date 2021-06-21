@@ -9,6 +9,7 @@ import 'package:zartek_test/CustomWidgets/CustomRaisedGradientButton.dart';
 import 'package:zartek_test/Screens/HomeScreen/HomeScreen.dart';
 import 'package:zartek_test/Screens/PhoneRegisterScreen/PhoneRegisterScreen.dart';
 import 'package:zartek_test/Services/AuthService.dart';
+import 'package:zartek_test/Services/HelperService.dart';
 class LoginScreen extends StatefulWidget {
 
   @override
@@ -17,6 +18,27 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final double gap=SizeConfig.blockSizeVertical*27;
+
+
+  @override
+  void dispose() {
+    openBoxes();
+    super.dispose();
+  }
+
+ @override
+  void initState() {
+   WidgetsBinding.instance
+       .addPostFrameCallback((_) => openBoxes());
+
+
+    super.initState();
+  }
+  openBoxes(){
+   Future.delayed(Duration(seconds: 0),(){
+     HelperService().openAllBoxes();
+   });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -94,17 +116,9 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   googleButtonFunction(BuildContext context) async{
-    User user =await AuthService.signInWithGoogle(context);
-    print("${user.displayName}${user.uid}${user.email}");
-    Box box =Hive.box("user");
-    box.put("userName","${user.displayName}");
-    box.put("userId","${user.uid}");
-    box.put("email","${user.displayName}");
-    box.put("imageUrl",user.photoURL);
-    String uid=box.get("userId");
-    if(uid!=null){
-      Navigator.push(context, PageTransition(child: HomeScreen(), type: PageTransitionType.fade));
-    }
+    await AuthService().signInWithGoogle(context);
+
+
 
     // Navigator.push(context, PageTransition(child: HomeScreen(), type: PageTransitionType.fade));
   }
@@ -112,4 +126,6 @@ class _LoginScreenState extends State<LoginScreen> {
   phoneButtonFunction(BuildContext context) {
     Navigator.push(context, PageTransition(child: PhoneRegisterScreen(), type: PageTransitionType.fade));
   }
+
+
 }

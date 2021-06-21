@@ -41,7 +41,7 @@ class _PhoneRegisterScreenState extends State<PhoneRegisterScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                CustomTextInputField(controller: phoneController, label: "Phone", maxLength: 14,),
+                CustomTextInputField(controller: phoneController, label: "Phone", maxLength: 14,hint: "eg: +919249XXXXXX",),
                 SizedBox(height:gap*0.3,),
                 CustomRaisedGradientButton(child: Text("Submit",style: GoogleFonts.roboto(color: CColor.LoginScreenBGColor,fontSize: SizeConfig.blockSizeVertical*3),),gradient: LinearGradient(colors: [CColor.LoginScreenGoogleBtnLeft,CColor.LoginScreenGoogleBtnRight],begin: Alignment.centerLeft,end: Alignment.centerRight), height: SizeConfig.blockSizeVertical*8, onPressed:()=> AuthService().verifyPhone(phoneController, context), radius: SizeConfig.blockSizeVertical*4),
               ],

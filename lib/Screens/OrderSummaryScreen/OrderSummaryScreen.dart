@@ -54,15 +54,11 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                   height: SizeConfig.screenHeight * 0.65,
                   child: GetX<CartTotalController>(
                     builder: (controller) {
-                      List<CategoryDish> dishes = [];
                       Map<String, List<CategoryDish>> dishMap = {};
                       controller.list.forEach((element) {
-                        dishes.add(element);
+                          dishMap[element.dishId] = []..add(element);
                       });
-                      dishes.forEach((e) {
-                        dishMap[e.dishId] = []..add(e);
-                        print("added ${e.dishId}");
-                      });
+
 
                       return Column(
                         children: [
@@ -117,25 +113,25 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                                                         0.17,
                                                 addOnPressed: () {
                                                   controller
-                                                      .addToCart(dishes[index]);
+                                                      .addToCart(list[0]);
                                                   BlocProvider.of<
                                                               CartControllerCubit>(
                                                           ctx)
                                                       .increment(CountModel(
-                                                          dishId: dishes[index]
+                                                          dishId: list[0]
                                                               .dishId,
-                                                          dish: dishes[index]));
+                                                          dish: list[0]));
                                                 },
                                                 removeOnPressed: () {
                                                   controller.removeFromCart(
-                                                      dishes[index]);
+                                                      list[0]);
                                                   BlocProvider.of<
                                                               CartControllerCubit>(
                                                           ctx)
                                                       .decrement(CountModel(
-                                                          dishId: dishes[index]
+                                                          dishId: list[0]
                                                               .dishId,
-                                                          dish: dishes[index]));
+                                                          dish: list[0]));
                                                 },
                                                 textWidget:
                                                     ValueListenableBuilder(
@@ -162,8 +158,14 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                                                           .listenable(),
                                                   builder: (context, Box box,
                                                       child) {
+                                                    double sum;
+                                                    try{
+                                                      sum=list[0].dishPrice*box.get(list[0].dishId);
+                                                    }catch(e){
+                                                      sum=0;
+                                                    }
                                                     return Text(
-                                                        "${dishes[index].dishPrice * box.get(list[0].dishId)}",
+                                                        sum.toStringAsFixed(2),
                                                         style: GoogleFonts.roboto(
                                                             fontSize: SizeConfig
                                                                     .blockSizeHorizontal *
@@ -299,18 +301,19 @@ class _OrderSummaryScreenState extends State<OrderSummaryScreen> {
                 height: SizeConfig.screenHeight * 0.3,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Icon(
                       controller2.list.isNotEmpty == true
                           ? Icons.check_circle_outline
                           : Icons.warning_amber_sharp,
-                      size: SizeConfig.blockSizeHorizontal * 10,
+                      size: SizeConfig.blockSizeHorizontal * 20,
                       color: controller2.list.isNotEmpty == true
                           ? CColor.thumbsUp
                           : CColor.thumbsDown,
                     ),
+                    SizedBox(height: SizeConfig.blockSizeVertical*4,),
                     Text(
                       controller2.list.isNotEmpty == true
                           ? "Order Successfully placed"

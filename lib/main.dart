@@ -21,7 +21,7 @@ void main() async{
   Hive.registerAdapter(AddonCatAdapter());
   Hive.registerAdapter(EnumValuesAdapter());
   Hive.init(appDir.path);
-  await HelperService.openAllBoxes();
+  await HelperService().openAllBoxes();
   runApp(MyApp());
 }
 
@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
 
     return StreamProvider<User>.value(
       initialData: null,
-      value: AuthService().user,
+      value: AuthService().getUser,
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         home: Wrapper(),

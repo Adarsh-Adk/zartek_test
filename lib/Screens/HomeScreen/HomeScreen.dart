@@ -14,6 +14,7 @@ import 'package:zartek_test/Models/CountModel.dart';
 import 'package:zartek_test/Screens/OrderSummaryScreen/OrderSummaryScreen.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:zartek_test/Services/HelperService.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -24,18 +25,13 @@ class _HomeScreenState extends State<HomeScreen> {
   final tableController = Get.put(FoodDataController());
   final cartTotalController = Get.put(CartTotalController());
   GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  String uId;
-  String imageUrl;
-  String userName;
 
-  Box box = Hive.box("user");
   @override
   void initState() {
-    uId = box.get("userId");
-    imageUrl = box.get("imageUrl");
-    userName = box.get("userName");
+    HelperService().openAllBoxes();
     super.initState();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -59,9 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   drawer: CustomDrawer(
                       height: SizeConfig.screenHeight,
                       width: SizeConfig.screenWidth,
-                      uid: uId,
-                      imageUrl: imageUrl,
-                      userName: userName),
+               ),
                   key: _scaffoldKey,
                   appBar: AppBar(
                     leading: IconButton(

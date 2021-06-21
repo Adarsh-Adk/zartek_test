@@ -1,35 +1,51 @@
 import 'package:hive/hive.dart';
-class HelperService{
-  static closeAllBoxes()async{
-    Box cartBox=Hive.box("cart");
-    Box cartTotalBox=Hive.box("cartTotal");
-    Box userBox=Hive.box("user");
+
+class HelperService {
+  closeAllBoxes() async {
+    Box cartBox = Hive.box("cart");
+    Box cartTotalBox = Hive.box("cartTotal");
+    Box userBox = Hive.box("user");
     cartBox.close();
     cartTotalBox.close();
     userBox.close();
   }
-  static openAllBoxes()async{
-    bool a=Hive.isBoxOpen("cart");
-    bool b=Hive.isBoxOpen("cartTotal");
-    bool c=Hive.isBoxOpen("user");
-    if(!a){
+
+  openAllBoxes() async {
+    print("open all boxes called");
+    bool a = Hive.isBoxOpen("cart");
+    bool b = Hive.isBoxOpen("cartTotal");
+    bool c = Hive.isBoxOpen("user");
+    if (!a) {
       await Hive.openBox("cart");
+      print("cart open");
     }
-    if(!b){
+    if (!b) {
       await Hive.openBox("cartTotal");
+      print("cartTotal open");
     }
-    if(!c){
+    if (!c) {
       await Hive.openBox("user");
+      print("user open");
     }
   }
-  static clearAllBoxes()async{
-    Box cartBox=Hive.box("cart");
-    Box cartTotalBox=Hive.box("cartTotal");
-    Box userBox=Hive.box("user");
-    await cartBox.clear();
-    await cartTotalBox.clear();
-    await userBox.clear();
 
+  clearAllBoxes() async {
+    Box cartBox = Hive.box("cart");
+    Box cartTotalBox = Hive.box("cartTotal");
+    Box userBox = Hive.box("user");
+    await cartBox
+        .clear()
+        .then((value) async => await cartTotalBox.clear())
+        .whenComplete(() async => await userBox.clear())
+        .then((value) => print("boxes cleared"));
   }
 
+  deleteAllBoxes() async {
+    Box cartBox = Hive.box("cart");
+    Box cartTotalBox = Hive.box("cartTotal");
+    Box userBox = Hive.box("user");
+    await cartBox.deleteFromDisk();
+    await cartTotalBox.deleteFromDisk();
+    await userBox.deleteFromDisk();
+  }
 }

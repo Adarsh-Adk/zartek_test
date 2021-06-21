@@ -1,20 +1,25 @@
-import 'package:firebase_auth/firebase_auth.dart'as fire;
+import 'package:firebase_auth/firebase_auth.dart' as fire;
 import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:hive/hive.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:zartek_test/Controller/CartBloc/cart_controller_cubit.dart';
+import 'package:zartek_test/Controller/CartTotalController.dart';
 import 'package:zartek_test/CustomWidgets/CustomTextInputField.dart';
-import 'package:zartek_test/Models/User.dart'as model;
+import 'package:zartek_test/Models/User.dart' as model;
 import 'package:zartek_test/Screens/HomeScreen/HomeScreen.dart';
+import 'package:zartek_test/Services/HelperService.dart';
+
 class AuthService {
   String _phoneNo;
   String _smsOTP;
   String _verificationId;
-  String _errorMessage = '';
-  TextEditingController otpController=TextEditingController();
-  final fire.FirebaseAuth _auth = fire.FirebaseAuth.instance;
+  String _errorMessage;
+  TextEditingController otpController = TextEditingController();
+  fire.FirebaseAuth _auth = fire.FirebaseAuth.instance;
 
   //create user object based on FirebaseUser
   model.User _userFromFirebaseUser(fire.User user) {
@@ -22,17 +27,17 @@ class AuthService {
   }
 
   //auth change user stream
-  Stream<model.User> get user => _auth.authStateChanges().map(_userFromFirebaseUser);
+  Stream<model.User> get getUser =>
+      _auth.authStateChanges().map(_userFromFirebaseUser);
 
   //google signin
-  static Future<fire.User> signInWithGoogle(BuildContext context)async{
-    FirebaseAuth auth = FirebaseAuth.instance;
-    fire.User  user;
-    final GoogleSignIn googleSignIn=GoogleSignIn();
-    final GoogleSignInAccount googleSignInAccount=await googleSignIn.signIn();
+  Future<fire.User> signInWithGoogle(BuildContext context) async {
+    fire.User user;
+    final GoogleSignIn googleSignIn = GoogleSignIn();
+    final GoogleSignInAccount googleSignInAccount = await googleSignIn.signIn();
     if (googleSignInAccount != null) {
       final GoogleSignInAuthentication googleSignInAuthentication =
-      await googleSignInAccount.authentication;
+          await googleSignInAccount.authentication;
 
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleSignInAuthentication.accessToken,
@@ -40,24 +45,37 @@ class AuthService {
       );
 
       try {
-        final UserCredential userCredential =
-        await auth.signInWithCredential(credential);
+        await _auth
+            .signInWithCredential(credential)
+            .then((userCredential) async {
+          user = userCredential.user;
+          print("${user.displayName}${user.uid}${user.email}");
 
-        user = userCredential.user;
+          Box box = Hive.box("user");
+          String uid;
+          await box
+              .put("userName", "${user.displayName}")
+              .then((value) async => await box.put("userId", "${user.uid}"))
+              .then((value) async =>
+                  await box.put("email", "${user.displayName}"))
+              .then((value) async => await box.put("imageUrl", user.photoURL))
+              .then((value) async => await box.get("userId"))
+              .then((val) {
+            uid = val;
+          });
+        });
       } on FirebaseAuthException catch (e) {
         if (e.code == 'account-exists-with-different-credential') {
           ScaffoldMessenger.of(context).showSnackBar(
             AuthService.customSnackBar(
               content:
-              'The account already exists with a different credential.',
+                  'The account already exists with a different credential.',
             ),
           );
-        }
-        else if (e.code == 'invalid-credential') {
+        } else if (e.code == 'invalid-credential') {
           ScaffoldMessenger.of(context).showSnackBar(
             AuthService.customSnackBar(
-              content:
-              'Error occurred while accessing credentials. Try again.',
+              content: 'Error occurred while accessing credentials. Try again.',
             ),
           );
         }
@@ -73,11 +91,9 @@ class AuthService {
   }
 
   //sign out
-  static Future<void> signOut({@required BuildContext context}) async {
-
-
+  Future<void> signOut({@required BuildContext context}) async {
     try {
-      await FirebaseAuth.instance.signOut();
+      await _auth.signOut().whenComplete(() => HelperService().clearAllBoxes());
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         AuthService.customSnackBar(
@@ -90,18 +106,23 @@ class AuthService {
   static SnackBar customSnackBar({@required String content}) {
     return SnackBar(
       backgroundColor: Colors.black,
-      content: Text(
-        content,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(color: Colors.redAccent, letterSpacing: 0.5),
+      content: Container(
+        child: Text(
+          content,
+          style: TextStyle(color: Colors.redAccent, letterSpacing: 0.5),
+        ),
       ),
     );
   }
 
-  Future<void> verifyPhone(TextEditingController phoneController,BuildContext context) async {
-    this._phoneNo=phoneController.text;
-    final PhoneCodeSent smsOTPSent = (String verId, [int forceCodeResend]) {
-      this._verificationId = verId;
+  Future<void> verifyPhone(
+      TextEditingController phoneController, BuildContext context) async {
+    this._phoneNo = phoneController.text;
+
+      final PhoneCodeSent smsOTPSent = (String verId, [int forceCodeResend]) {
+        this._verificationId = verId;
+
+
       smsOTPDialog(context).then((value) {
         print('sign in');
       });
@@ -115,18 +136,20 @@ class AuthService {
             this._verificationId = verId;
           },
           codeSent:
-          smsOTPSent, // WHEN CODE SENT THEN WE OPEN DIALOG TO ENTER OTP.
+              smsOTPSent, // WHEN CODE SENT THEN WE OPEN DIALOG TO ENTER OTP.
           timeout: const Duration(seconds: 20),
           verificationCompleted: (AuthCredential phoneAuthCredential) {
             print(phoneAuthCredential);
           },
-          verificationFailed: ( exceptio) {
-            print('${exceptio.message}');
+          verificationFailed: (e) {
+            handleError(context, e);
           });
     } catch (e) {
-      handleError(context,e);
+      handleError(context, e);
+      print(e);
     }
   }
+
   Future<bool> smsOTPDialog(BuildContext context) {
     return showDialog(
         context: context,
@@ -143,17 +166,12 @@ class AuthService {
                     controller: otpController,
                     label: "OTP",
                   ),
-                  // child: TextField(
-                  //   onChanged: (value) {
-                  //     this._smsOTP = value;
-                  //   },
-                  // ),
                 ),
-                (_errorMessage != ''
+                (_errorMessage != null
                     ? Text(
-                  _errorMessage,
-                  style: TextStyle(color: Colors.red),
-                )
+                        _errorMessage,
+                        style: TextStyle(color: Colors.red),
+                      )
                     : Container())
               ]),
             ),
@@ -162,40 +180,44 @@ class AuthService {
               TextButton(
                 child: Text('Done'),
                 onPressed: () {
-                  User user= _auth.currentUser;
-                  if (user != null) {
-                    Navigator.of(context).pop();
-                    Navigator.of(context).pushReplacementNamed('/homepage');
-                  } else {
-                    signIn(context);
+                  String smsOtp = otpController.text;
+                  User user = _auth.currentUser;
+                  if (user == null) {
+                    signIn(context, smsOtp);
                   }
-
                 },
               )
             ],
           );
         });
   }
-  signIn(BuildContext context) async {
+
+  signIn(BuildContext context, smsOtp) async {
     try {
       final AuthCredential credential = PhoneAuthProvider.credential(
         verificationId: _verificationId,
-        smsCode: _smsOTP,
+        smsCode: smsOtp,
       );
       final UserCredential user = await _auth.signInWithCredential(credential);
-      final User currentUser =  _auth.currentUser;
+      final User currentUser = _auth.currentUser;
       assert(user.user.uid == currentUser.uid);
-      Box box =Hive.box("user");
-      box.put("userName","${user.user.displayName}");
-      box.put("userId","${user.user.uid}");
-      box.put("email","${user.user.displayName}");
-      box.put("imageUrl",user.user.photoURL);
+      Box box = Hive.box("user");
+      await box.put("userName", "${user.user.displayName}");
+      await box.put("userId", "${user.user.uid}");
+      await box.put("email", "${user.user.displayName}");
+      await box.put("imageUrl", user.user.photoURL);
       Navigator.pop(context);
-      Navigator.pushAndRemoveUntil(context, PageTransition(child: HomeScreen(), type: PageTransitionType.fade),(route)=>false);
+      Navigator.pop(context);
+      // Navigator.pushAndRemoveUntil(
+      //     context,
+      //     PageTransition(child: HomeScreen(), type: PageTransitionType.fade),
+      //     (route) => false);
     } catch (e) {
-      handleError(context,e);
+      Navigator.pop(context);
+      handleError(context, e);
     }
   }
+
   handleError(BuildContext context, error) {
     print(error);
     switch (error.code) {
@@ -215,13 +237,11 @@ class AuthService {
       default:
         ScaffoldMessenger.of(context).showSnackBar(
           AuthService.customSnackBar(
-            content: '$_errorMessage',
+            content: '${error.message}',
           ),
         );
 
         break;
     }
   }
-
-
 }

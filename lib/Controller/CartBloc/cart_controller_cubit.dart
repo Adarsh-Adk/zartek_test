@@ -56,7 +56,10 @@ class CartControllerCubit extends Cubit<CartControllerState> {
   }
 
   void reset()async{
-    await box.clear();
-    map={};
+    await box.clear().whenComplete(() {
+      print("cartTotal cleared");
+      map={};
+    });
+
   }
 }
